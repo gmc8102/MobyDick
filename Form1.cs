@@ -14,12 +14,14 @@ namespace MobyDick
     {
         Dictionary<string, int> StopWords = new Dictionary<string, int>();
         Dictionary<string, int> GoWords = new Dictionary<string, int>();
+        DataTable dtTopGoWords = new DataTable();
 
         public MobyDickWordCount()
         {
             InitializeComponent();
             GetStopWords();
             GetGoWords();
+            GetTop100();
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -60,8 +62,7 @@ namespace MobyDick
         {
             System.Console.WriteLine("Go Words...");
             Boolean bProcessing = false;
-            //char[] charsToTrim = { '*', ',', '.', ' ', '\'' };
-            char[] splitchars = { ' ', ',', '.', '-', '—' };   
+            char[] splitchars = { ' ', ',', '.', '-', '—', '“', '”' };   
             int ctLines = 0;
             int ctWords = 0;
             foreach (string line in System.IO.File.ReadLines(@"C:\temp\mobydick.txt"))
@@ -98,6 +99,23 @@ namespace MobyDick
             System.Console.WriteLine("There are {0} lines.", ctLines);
             System.Console.WriteLine("There are {0} words.", ctWords);
             System.Console.WriteLine("There are {0} entries.", GoWords.Count);
+        }
+
+        private void GetTop100()
+        {
+            DataRow dr;
+            dtTopGoWords.Columns.Add("GoWord", typeof(string));
+            dtTopGoWords.Columns.Add("Count", typeof(int));
+
+            foreach (var entry in GoWords.OrderByDescending(e => e.Value).Take(100))
+            {
+                dr = dtTopGoWords.NewRow();
+                dr["GoWord"] = entry.Key;
+                dr["Count"] = entry.Value;
+                dtTopGoWords.Rows.Add(dr);
+                dr.CancelEdit();
+            }
+            dataGridView1.DataSource = dtTopGoWords;
         }
     }
 }
